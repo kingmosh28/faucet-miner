@@ -1,1 +1,18 @@
+{
+  "name": "faucet-miner",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "puppeteer": "^19.11.1",
+    "telegraf": "^4.12.2",
+    "typescript": "^4.9.5"
+  },
+  "devDependencies": {
+    "@types/node": "^18.16.0"
+  }
+}
 
