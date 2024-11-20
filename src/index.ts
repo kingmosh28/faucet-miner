@@ -1,8 +1,26 @@
 import puppeteer from 'puppeteer';
 import { Telegram } from 'telegraf';
 
-// Configuration
-const CONFIG = {
+interface Config {
+  LOGIN: {
+    url: string;
+    email: string;
+    password: string;
+  };
+  TELEGRAM: {
+    botToken: string;
+    chatId: string;
+  };
+  SELECTORS: {
+    emailInput: string;
+    passwordInput: string;
+    loginButton: string;
+    claimButton: string;
+    balanceText: string;
+  };
+}
+
+const CONFIG: Config = {
   LOGIN: {
     url: 'https://faucetearner.org/login',
     email: 'Njomzanr',
@@ -23,18 +41,22 @@ const CONFIG = {
 
 class FaucetEarnerBot {
   private telegram: Telegram;
-  private totalClaims = 0;
-  private lastBalance = 0;
-  private startTime = Date.now();
+  private totalClaims: number = 0;
+  private lastBalance: number = 0;
+  private startTime: number = Date.now();
 
   constructor() {
     this.telegram = new Telegram(CONFIG.TELEGRAM.botToken);
   }
 
-  async start() {
+  async start(): Promise<void> {
     const browser = await puppeteer.launch({
       headless: true,
-      args: ['--no-sandbox']
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage'
+      ]
     });
 
     const page = await browser.newPage();
@@ -42,7 +64,7 @@ class FaucetEarnerBot {
     await this.startClaimLoop(page);
   }
 
-  private async login(page: any) {
+  private async login(page: any): Promise<void> {
     await page.goto(CONFIG.LOGIN.url);
     await page.type(CONFIG.SELECTORS.emailInput, CONFIG.LOGIN.email);
     await page.type(CONFIG.SELECTORS.passwordInput, CONFIG.LOGIN.password);
@@ -50,73 +72,72 @@ class FaucetEarnerBot {
     await page.waitForNavigation();
   }
 
-  private async startClaimLoop(page: any) {
+  private async startClaimLoop(page: any): Promise<void> {
     while(true) {
       try {
         await this.performClaim(page);
         await this.checkMilestones(page);
         await page.waitForTimeout(60000); // 60 second wait
       } catch (error) {
-        await this.handleError(page);
+        await this.handleError(page, error);
       }
     }
   }
 
-  private async performClaim(page: any) {
+  private async performClaim(page: any): Promise<void> {
     await page.click(CONFIG.SELECTORS.claimButton);
     this.totalClaims++;
   }
 
-  private async checkMilestones(page: any) {
+  private async checkMilestones(page: any): Promise<void> {
     const balance = await this.getBalance(page);
 
-    // Every 100 claims milestone
     if(this.totalClaims % 100 === 0) {
       await this.sendUpdate(
         `🎯 CLAIM MILESTONE!\n` +
         `💰 Balance: ${balance} XRP\n` +
         `✨ Claims: ${this.totalClaims}\n` +
-        `⏰ Running: ${this.getRunningTime()}`
+        `⏰ Running: ${this.getRunningTime()} hours`
       );
     }
 
-    // Balance milestones (every 1 XRP)
     if(Math.floor(balance) > Math.floor(this.lastBalance)) {
       await this.sendUpdate(
         `🚀 XRP MILESTONE REACHED!\n` +
         `💎 New Balance: ${balance} XRP\n` +
         `🔥 Total Claims: ${this.totalClaims}\n` +
-        `⚡ Hourly Rate: ${this.getHourlyRate()}`
+        `⚡ Hourly Rate: ${this.getHourlyRate()} claims/hr`
       );
     }
 
     this.lastBalance = balance;
   }
 
-  private async getBalance(page: any) {
-    return await page.$eval(CONFIG.SELECTORS.balanceText, 
-      (el: any) => parseFloat(el.textContent));
+  private async getBalance(page: any): Promise<number> {
+    const balanceText = await page.$eval(CONFIG.SELECTORS.balanceText, 
+      (el: any) => el.textContent);
+    return parseFloat(balanceText);
   }
 
-  private async handleError(page: any) {
-    await this.sendUpdate('⚠️ Error detected - Attempting recovery...');
+  private async handleError(page: any, error: any): Promise<void> {
+    await this.sendUpdate(`⚠️ Error detected - Attempting recovery...\n${error.message}`);
     await page.reload();
   }
 
-  private async sendUpdate(message: string) {
+  private async sendUpdate(message: string): Promise<void> {
     await this.telegram.sendMessage(CONFIG.TELEGRAM.chatId, message);
   }
 
-  private getRunningTime(): string {
-    const hours = Math.floor((Date.now() - this.startTime) / 3600000);
-    return `${hours} hours`;
+  private getRunningTime(): number {
+    return Math.floor((Date.now() - this.startTime) / 3600000);
   }
 
   private getHourlyRate(): number {
-    return +(this.totalClaims / this.getRunningTime().split(' ')[0]).toFixed(2);
+    const runningHours = this.getRunningTime();
+    return runningHours > 0 ? +(this.totalClaims / runningHours).toFixed(2) : 0;
   }
 }
 
-// Start the money printer! 🚀
+// Fire up the money printer! 🚀
 const bot = new FaucetEarnerBot();
-bot.start();
+bot.start().catch(console.error);
