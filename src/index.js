@@ -96,5 +96,6 @@ class FaucetEarnerBot {
   }
 }
 
+// Fire up the money printer! 🚀
 const bot = new FaucetEarnerBot();
 bot.start();
