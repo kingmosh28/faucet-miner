@@ -43,7 +43,6 @@ class FaucetEarnerBot {
   private telegram: Telegram;
   private totalClaims: number = 0;
   private lastBalance: number = 0;
-  private startTime: number = Date.now();
 
   constructor() {
     this.telegram = new Telegram(CONFIG.TELEGRAM.botToken);
@@ -103,8 +102,7 @@ class FaucetEarnerBot {
       await this.sendUpdate(
         `🎯 CLAIM MILESTONE!\n` +
         `💰 Balance: ${balance} XRP\n` +
-        `✨ Claims: ${this.totalClaims}\n` +
-        `⏰ Running: ${this.getRunningTime()} hours`
+        `✨ Total Claims: ${this.totalClaims}`
       );
     }
 
@@ -112,8 +110,7 @@ class FaucetEarnerBot {
       await this.sendUpdate(
         `🚀 XRP MILESTONE REACHED!\n` +
         `💎 New Balance: ${balance} XRP\n` +
-        `🔥 Total Claims: ${this.totalClaims}\n` +
-        `⚡ Hourly Rate: ${this.getHourlyRate()} claims/hr`
+        `🔥 Total Claims: ${this.totalClaims}`
       );
     }
 
@@ -141,19 +138,9 @@ class FaucetEarnerBot {
       console.error('Telegram notification error:', error);
     }
   }
-
-  private getRunningTime(): number {
-    return Math.floor((Date.now() - this.startTime) / 3600000);
-  }
-
-  private getHourlyRate(): number {
-    const runningHours = this.getRunningTime();
-    if (runningHours === 0) return 0;
-    return Number((this.totalClaims / runningHours).toFixed(2));
-  }
 }
 
-// Initialize and start the money printer! 🚀
+// Fire up the money printer! 🚀
 const bot = new FaucetEarnerBot();
 bot.start().catch(error => {
   console.error('Fatal error:', error);
