@@ -50,18 +50,24 @@ class FaucetEarnerBot {
   }
 
   async start(): Promise<void> {
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage'
-      ]
-    });
+    try {
+      const browser = await puppeteer.launch({
+        headless: true,
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage'
+        ]
+      });
 
-    const page = await browser.newPage();
-    await this.login(page);
-    await this.startClaimLoop(page);
+      const page = await browser.newPage();
+      await this.login(page);
+      await this.startClaimLoop(page);
+    } catch (error) {
+      console.error('Startup error:', error);
+      await this.sendUpdate('🔥 Critical error: Bot restarting...');
+      process.exit(1);
+    }
   }
 
   private async login(page: any): Promise<void> {
@@ -70,6 +76,7 @@ class FaucetEarnerBot {
     await page.type(CONFIG.SELECTORS.passwordInput, CONFIG.LOGIN.password);
     await page.click(CONFIG.SELECTORS.loginButton);
     await page.waitForNavigation();
+    await this.sendUpdate('🚀 Bot Successfully Started!\n💰 Ready to mine XRP!');
   }
 
   private async startClaimLoop(page: any): Promise<void> {
@@ -77,7 +84,7 @@ class FaucetEarnerBot {
       try {
         await this.performClaim(page);
         await this.checkMilestones(page);
-        await page.waitForTimeout(60000); // 60 second wait
+        await page.waitForTimeout(60000);
       } catch (error) {
         await this.handleError(page, error);
       }
@@ -114,18 +121,25 @@ class FaucetEarnerBot {
   }
 
   private async getBalance(page: any): Promise<number> {
-    const balanceText = await page.$eval(CONFIG.SELECTORS.balanceText, 
-      (el: any) => el.textContent);
-    return parseFloat(balanceText);
+    const balanceText = await page.$eval(
+      CONFIG.SELECTORS.balanceText, 
+      (el: Element) => el.textContent || '0'
+    );
+    return Number(balanceText) || 0;
   }
 
-  private async handleError(page: any, error: any): Promise<void> {
+  private async handleError(page: any, error: Error): Promise<void> {
     await this.sendUpdate(`⚠️ Error detected - Attempting recovery...\n${error.message}`);
     await page.reload();
+    await page.waitForTimeout(5000);
   }
 
   private async sendUpdate(message: string): Promise<void> {
-    await this.telegram.sendMessage(CONFIG.TELEGRAM.chatId, message);
+    try {
+      await this.telegram.sendMessage(CONFIG.TELEGRAM.chatId, message);
+    } catch (error) {
+      console.error('Telegram notification error:', error);
+    }
   }
 
   private getRunningTime(): number {
@@ -134,10 +148,14 @@ class FaucetEarnerBot {
 
   private getHourlyRate(): number {
     const runningHours = this.getRunningTime();
-    return runningHours > 0 ? +(this.totalClaims / runningHours).toFixed(2) : 0;
+    if (runningHours === 0) return 0;
+    return Number((this.totalClaims / runningHours).toFixed(2));
   }
 }
 
-// Fire up the money printer! 🚀
+// Initialize and start the money printer! 🚀
 const bot = new FaucetEarnerBot();
-bot.start().catch(console.error);
+bot.start().catch(error => {
+  console.error('Fatal error:', error);
+  process.exit(1);
+});
