@@ -1,3 +1,4 @@
+const http = require('http');
 const CommandCenter = require("./command.js");
 
 class XRPFactory {
@@ -5,6 +6,16 @@ class XRPFactory {
         console.log("🚀 Initializing XRP Factory...");
         this.setupErrorHandlers();
         this.commandCenter = new CommandCenter();
+        this.setupServer();
+    }
+
+    setupServer() {
+        const server = http.createServer((_, res) => {
+            res.writeHead(200);
+            res.end('🚀 XRP Factory Running!');
+        });
+        server.listen(8080);
+        console.log("💎 Health check server online!");
     }
 
     setupErrorHandlers() {
