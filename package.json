@@ -2,7 +2,7 @@
   "name": "faucet-miner",
   "version": "1.0.0",
   "description": "A script to automate XRP claiming from faucetearner.org",
-  "main": "dist/index.js", // Updated path
+  "main": "dist/index.js", 
   "scripts": {
     "start": "node dist/index.js"
   },
