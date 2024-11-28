@@ -1,19 +1,14 @@
 {
   "name": "faucet-miner",
   "version": "1.0.0",
-  "description": "A script to automate XRP claiming from faucetearner.org",
+  "description": "XRP Mining Operation",
   "main": "src/index.js",
-  "engines": {
-    "node": ">=18.0.0"
-  },
   "scripts": {
     "start": "node src/index.js"
   },
   "dependencies": {
-    "axios": "^1.6.2",
-    "dotenv": "^16.3.1",
-    "cheerio": "^1.0.0-rc.12"
-  },
-  "author": "NJOMANE",
-  "license": "MIT"
+    "axios": "1.6.2",
+    "cheerio": "1.0.0-rc.12",
+    "dotenv": "16.3.1"
+  }
 }
