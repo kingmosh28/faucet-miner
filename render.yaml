@@ -3,7 +3,7 @@ services:
     name: xrp-miner
     env: node
     buildCommand: npm install
-    startCommand: node index.js
+    startCommand: node src/index.js
     plan: free
     envVars:
       - key: NODE_ENV
