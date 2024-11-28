@@ -1,3 +1,8 @@
 name = "xrpminer"
 main = "src/index.js"
 compatibility_date = "2024-01-01"
+pages_build_output_dir = "src"
+
+[build]
+command = "npm install"
+output_dir = "src"
