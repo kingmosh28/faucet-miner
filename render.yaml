@@ -1,7 +1,0 @@
-services:
-  - type: web
-    name: xrp-miner
-    env: node
-    buildCommand: yarn install
-    startCommand: yarn start
-    plan: free
