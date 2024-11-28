@@ -1,4 +1,3 @@
-const http = require('http');
 const axios = require('axios');
 const CommandCenter = require("./command.js");
 
@@ -7,27 +6,6 @@ class XRPFactory {
         console.log("🚀 Initializing XRP Factory...");
         this.setupErrorHandlers();
         this.commandCenter = new CommandCenter();
-        this.setupServer();
-    }
-
-    setupServer() {
-        const server = http.createServer((_, res) => {
-            res.writeHead(200);
-            res.end('🚀 XRP Factory Running!');
-        });
-        const PORT = process.env.PORT || 8080;
-        server.listen(PORT);
-        console.log("💎 Health check server online!");
-
-        // Add self-ping mechanism to prevent spin-down
-        setInterval(async () => {
-            try {
-                const response = await axios.get(process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`);
-                console.log("🏓 Keep-alive ping successful");
-            } catch (error) {
-                console.log("💪 Keep-alive maintaining rhythm...");
-            }
-        }, 180000); // Ping every 3 minutes
     }
 
     setupErrorHandlers() {
@@ -54,18 +32,38 @@ class XRPFactory {
     async initialize() {
         console.log("⚡ Command Center Online!");
         console.log("🎯 Ready for Telegram commands...");
-
-        // Keep process alive with enhanced health checks
-        setInterval(() => {
-            console.log("💪 System healthy...");
-        }, 300000); // Health check every 5 minutes
+        
+        // Keep instance alive
+        setInterval(async () => {
+            try {
+                await axios.get(process.env.VERCEL_URL || 'http://localhost:3000');
+                console.log("🏓 Keep-alive successful");
+            } catch (error) {
+                console.log("💪 Keep-alive maintaining rhythm...");
+            }
+        }, 180000);
     }
 }
 
-// LAUNCH THE MONEY PRINTER! 🚀
-console.log("💎 XRP Factory Bootup Sequence...");
-const factory = new XRPFactory();
-factory.initialize().catch((error) => {
-    console.log("⚠️ Initialization error:", error.message);
-    process.exit(1);
-});
+// Export for Vercel serverless function
+module.exports = async (req, res) => {
+    if (!global.factory) {
+        global.factory = new XRPFactory();
+        await global.factory.initialize();
+    }
+    
+    res.status(200).json({
+        status: 'active',
+        message: '🚀 XRP Factory Running!'
+    });
+};
+
+// Local development support
+if (process.env.NODE_ENV === 'development') {
+    console.log("💎 XRP Factory Bootup Sequence...");
+    const factory = new XRPFactory();
+    factory.initialize().catch((error) => {
+        console.log("⚠️ Initialization error:", error.message);
+        process.exit(1);
+    });
+}
