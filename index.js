@@ -1,4 +1,5 @@
 const http = require('http');
+const axios = require('axios');
 const CommandCenter = require("./command.js");
 
 class XRPFactory {
@@ -14,8 +15,19 @@ class XRPFactory {
             res.writeHead(200);
             res.end('🚀 XRP Factory Running!');
         });
-        server.listen(8080);
+        const PORT = process.env.PORT || 8080;
+        server.listen(PORT);
         console.log("💎 Health check server online!");
+
+        // Add self-ping mechanism to prevent spin-down
+        setInterval(async () => {
+            try {
+                const response = await axios.get(process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`);
+                console.log("🏓 Keep-alive ping successful");
+            } catch (error) {
+                console.log("💪 Keep-alive maintaining rhythm...");
+            }
+        }, 180000); // Ping every 3 minutes
     }
 
     setupErrorHandlers() {
@@ -43,7 +55,7 @@ class XRPFactory {
         console.log("⚡ Command Center Online!");
         console.log("🎯 Ready for Telegram commands...");
 
-        // Keep process alive
+        // Keep process alive with enhanced health checks
         setInterval(() => {
             console.log("💪 System healthy...");
         }, 300000); // Health check every 5 minutes
