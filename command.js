@@ -22,7 +22,6 @@ class CommandCenter {
             };
             await axios.post(url, payload);
         } catch (error) {
-            console.log('📡 Message retry...');
             setTimeout(() => this.sendMessage(text), 5000);
         }
     }
@@ -37,7 +36,6 @@ class CommandCenter {
             const response = await axios.get(url, { params });
             return response.data.result;
         } catch (error) {
-            console.log('📡 Update retry...');
             return [];
         }
     }
@@ -53,7 +51,7 @@ class CommandCenter {
                 }
                 await new Promise(resolve => setTimeout(resolve, 1000));
             } catch (error) {
-                console.log('💪 Maintaining command rhythm...');
+                // Silent error handling to keep the command center running
             }
         }
     }
