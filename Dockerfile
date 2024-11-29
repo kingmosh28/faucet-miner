@@ -2,17 +2,16 @@ FROM node:16
 
 WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json first
-COPY package*.json ./
-
 # Install app dependencies
-RUN npm install --production=false
+COPY package*.json ./
+RUN npm install
 
 # Bundle app source
-COPY . .
+COPY index.js .
+COPY command.js .
+COPY worker.js .
 
-# Standard Node.js port
 EXPOSE 3000
 
-# Start command
-CMD [ "node", "src/index.js" ]
+# Update the start command to match actual file location
+CMD [ "node", "index.js" ]
