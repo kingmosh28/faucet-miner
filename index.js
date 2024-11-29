@@ -1,3 +1,4 @@
+const http = require('http');
 const axios = require('axios');
 const CommandCenter = require("./command.js");
 
@@ -7,7 +8,7 @@ class XRPFactory {
         this.setupErrorHandlers();
         this.commandCenter = new CommandCenter();
         this.updateRetryCount = 0;
-        this.maxRetryLogs = 3; // Only show first 3 retry attempts
+        this.maxRetryLogs = 3;
     }
 
     setupErrorHandlers() {
@@ -32,7 +33,6 @@ class XRPFactory {
         console.log("⚡ Command Center Online!");
         console.log("🎯 Ready for Telegram commands...");
         
-        // Create health check server
         const server = http.createServer((req, res) => {
             res.writeHead(200);
             res.end('OK');
