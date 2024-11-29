@@ -1,4 +1,3 @@
-const http = require('http');
 const axios = require('axios');
 const CommandCenter = require("./command.js");
 
@@ -7,6 +6,8 @@ class XRPFactory {
         console.log("🚀 Initializing XRP Factory...");
         this.setupErrorHandlers();
         this.commandCenter = new CommandCenter();
+        this.updateRetryCount = 0;
+        this.maxRetryLogs = 3; // Only show first 3 retry attempts
     }
 
     setupErrorHandlers() {
