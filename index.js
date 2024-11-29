@@ -32,7 +32,7 @@ class XRPFactory {
     async initialize() {
         console.log("⚡ Command Center Online!");
         console.log("🎯 Ready for Telegram commands...");
-        
+
         // Keep instance alive
         setInterval(async () => {
             try {
@@ -65,5 +65,32 @@ if (process.env.NODE_ENV === 'development') {
     factory.initialize().catch((error) => {
         console.log("⚠️ Initialization error:", error.message);
         process.exit(1);
+    });
+} else {
+    // Ensure the server keeps running in production
+    const express = require('express');
+    const app = express();
+    const PORT = process.env.PORT || 3000;
+
+    // Health check endpoint
+    app.get('/health', (req, res) => {
+        res.status(200).json({ status: 'healthy' });
+    });
+
+    // Main route to initialize XRP Factory
+    app.get('/', async (req, res) => {
+        if (!global.factory) {
+            global.factory = new XRPFactory();
+            await global.factory.initialize();
+        }
+        res.status(200).json({
+            status: 'active',
+            message: '🚀 XRP Factory Running!'
+        });
+    });
+
+    // Start the server
+    app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
     });
 }
