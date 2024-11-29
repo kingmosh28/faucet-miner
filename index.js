@@ -1,3 +1,4 @@
+const http = require('http');
 const axios = require('axios');
 const CommandCenter = require("./command.js");
 
@@ -10,10 +11,7 @@ class XRPFactory {
 
     setupErrorHandlers() {
         process.on("uncaughtException", (error) => {
-            console.log(
-                "💪 Maintaining operation despite error:",
-                error.message,
-            );
+            console.log("💪 Maintaining operation despite error:", error.message);
         });
 
         process.on("unhandledRejection", (error) => {
@@ -33,15 +31,15 @@ class XRPFactory {
         console.log("⚡ Command Center Online!");
         console.log("🎯 Ready for Telegram commands...");
         
-        // Keep instance alive with simple ping
-        setInterval(async () => {
-            try {
-                await axios.get('http://localhost:3000');
-                console.log("🏓 Keep-alive successful");
-            } catch (error) {
-                console.log("💪 Keep-alive maintaining rhythm...");
-            }
-        }, 180000);
+        // Create health check server
+        const server = http.createServer((req, res) => {
+            res.writeHead(200);
+            res.end('OK');
+        });
+        
+        server.listen(8000, () => {
+            console.log('🏥 Health check server running on port 8000');
+        });
     }
 }
 
