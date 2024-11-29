@@ -11,7 +11,7 @@ COPY index.js .
 COPY command.js .
 COPY worker.js .
 
-EXPOSE 3000
+EXPOSE 8000
 
 # Update the start command to match actual file location
 CMD [ "node", "index.js" ]
