@@ -7,8 +7,6 @@ class XRPFactory {
         console.log("🚀 Initializing XRP Factory...");
         this.setupErrorHandlers();
         this.commandCenter = new CommandCenter();
-        this.updateRetryCount = 0;
-        this.maxRetryLogs = 3;
     }
 
     setupErrorHandlers() {
